@@ -18,24 +18,6 @@
     </header>
 
     <div class="two-col">
-      <section class="card qr-preview-card" id="preview-section" aria-labelledby="preview-heading">
-        <h2 id="preview-heading">Preview</h2>
-        <div class="qr-frame">
-          <div id="qr-container" class="qr-container">
-            <div class="qr-inner">
-              <p class="qr-placeholder">Enter a link and click Generate</p>
-            </div>
-          </div>
-          <div id="qr-caption" class="qr-caption"></div>
-        </div>
-        <div class="preview-actions">
-          <button type="button" id="btn-download" class="btn-primary" disabled>Download PNG</button>
-          <button type="button" id="btn-download-jpeg" class="btn-primary" disabled>Download JPEG</button>
-          <button type="button" id="btn-download-svg" class="btn-primary" disabled>Download SVG</button>
-          <button type="button" id="btn-copy-png" class="btn-primary" disabled>Copy PNG</button>
-        </div>
-      </section>
-
       <section class="card" aria-labelledby="input-heading">
         <h2 id="input-heading">Link & options</h2>
         <label for="url-input" class="label">URL or text</label>
@@ -107,6 +89,24 @@
         <p class="hint">Shown at the bottom of the QR code frame.</p>
 
         <button type="button" id="btn-generate" class="btn-primary">Generate QR code</button>
+      </section>
+
+      <section class="card qr-preview-card" id="preview-section" aria-labelledby="preview-heading">
+        <h2 id="preview-heading">QR Preview</h2>
+        <div class="qr-frame">
+          <div id="qr-container" class="qr-container">
+            <div class="qr-inner">
+              <p class="qr-placeholder">Enter a link and click Generate</p>
+            </div>
+          </div>
+          <div id="qr-caption" class="qr-caption"></div>
+        </div>
+        <div class="preview-actions">
+          <button type="button" id="btn-download" class="btn-primary" disabled>Download PNG</button>
+          <button type="button" id="btn-download-jpeg" class="btn-primary" disabled>Download JPEG</button>
+          <button type="button" id="btn-download-svg" class="btn-primary" disabled>Download SVG</button>
+          <button type="button" id="btn-copy-png" class="btn-primary" disabled>Copy PNG</button>
+        </div>
       </section>
     </div>
 
