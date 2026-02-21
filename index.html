@@ -79,14 +79,20 @@
           </div>
         </div>
 
-        <label for="logo-input" class="label">Logo (optional)</label>
-        <input
-          type="file"
-          id="logo-input"
-          class="input-file"
-          accept="image/*"
-          aria-describedby="logo-hint"
-        >
+        <span class="label">Logo (optional)</span>
+        <div class="logo-file-row">
+          <span class="logo-input-wrap">
+            <input
+              type="file"
+              id="logo-input"
+              accept="image/*"
+              aria-label="Logo (optional)"
+              aria-describedby="logo-hint"
+            >
+          </span>
+          <button type="button" id="logo-choose-btn" class="logo-choose-btn">Choose File</button>
+          <span id="logo-filename" class="logo-filename">No file chosen</span>
+        </div>
         <p id="logo-hint" class="hint">PNG or JPG. Shown in the center of the QR code.</p>
 
         <label for="caption-input" class="label">Bottom text (optional)</label>

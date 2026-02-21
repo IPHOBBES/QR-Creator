@@ -9,6 +9,8 @@
   const qrColorHex = document.getElementById('qr-color-hex');
   const qrBgColorHex = document.getElementById('qr-bg-color-hex');
   const logoInput = document.getElementById('logo-input');
+  const logoChooseBtn = document.getElementById('logo-choose-btn');
+  const logoFilename = document.getElementById('logo-filename');
   const captionInput = document.getElementById('caption-input');
   const btnGenerate = document.getElementById('btn-generate');
   const qrContainer = document.getElementById('qr-container');
@@ -344,6 +346,7 @@
 
   function onLogoChange() {
     const file = logoInput.files && logoInput.files[0];
+    if (logoFilename) logoFilename.textContent = file ? file.name : 'No file chosen';
     logoDataUrl = null;
     if (!file || !file.type.startsWith('image/')) {
       if (qrCode && urlInput.value.trim()) generate();
@@ -361,9 +364,25 @@
     if (qrCode && urlInput.value.trim()) generate();
   }
 
+  var colorDebounceTimer = null;
+  var COLOR_DEBOUNCE_MS = 120;
+
+  function onColorInput() {
+    qrColorHex.textContent = qrColorInput.value;
+    qrBgColorHex.textContent = qrBgColorInput.value;
+    if (!qrCode || !urlInput.value.trim()) return;
+    if (colorDebounceTimer) clearTimeout(colorDebounceTimer);
+    colorDebounceTimer = setTimeout(function () {
+      colorDebounceTimer = null;
+      generate();
+    }, COLOR_DEBOUNCE_MS);
+  }
+
   function onColorChange() {
     qrColorHex.textContent = qrColorInput.value;
     qrBgColorHex.textContent = qrBgColorInput.value;
+    if (colorDebounceTimer) clearTimeout(colorDebounceTimer);
+    colorDebounceTimer = null;
     if (qrCode && urlInput.value.trim()) generate();
   }
 
@@ -376,12 +395,13 @@
   btnDownloadJpeg.addEventListener('click', downloadJpeg);
   btnDownloadSvg.addEventListener('click', downloadSvg);
   btnCopyPng.addEventListener('click', copyPng);
+  if (logoChooseBtn) logoChooseBtn.addEventListener('click', function () { logoInput.click(); });
   logoInput.addEventListener('change', onLogoChange);
   captionInput.addEventListener('input', onCaptionInput);
   captionInput.addEventListener('change', onCaptionInput);
-  qrColorInput.addEventListener('input', onColorChange);
+  qrColorInput.addEventListener('input', onColorInput);
   qrColorInput.addEventListener('change', onColorChange);
-  qrBgColorInput.addEventListener('input', onColorChange);
+  qrBgColorInput.addEventListener('input', onColorInput);
   qrBgColorInput.addEventListener('change', onColorChange);
   styleInputs.forEach(function (radio) {
     radio.addEventListener('change', onStyleChange);
