@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Creator</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=DM+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="container">
+    <header class="header">
+      <h1 class="title">QR Creator</h1>
+      <p class="tagline">Create styled QR codes with logo and custom text</p>
+    </header>
+
+    <div class="two-col">
+      <section class="card qr-preview-card" id="preview-section" aria-labelledby="preview-heading">
+        <h2 id="preview-heading">Preview</h2>
+        <div class="qr-frame">
+          <div id="qr-container" class="qr-container">
+            <div class="qr-inner">
+              <p class="qr-placeholder">Enter a link and click Generate</p>
+            </div>
+          </div>
+          <div id="qr-caption" class="qr-caption"></div>
+        </div>
+        <div class="preview-actions">
+          <button type="button" id="btn-download" class="btn-primary" disabled>Download PNG</button>
+          <button type="button" id="btn-download-jpeg" class="btn-primary" disabled>Download JPEG</button>
+          <button type="button" id="btn-download-svg" class="btn-primary" disabled>Download SVG</button>
+          <button type="button" id="btn-copy-png" class="btn-primary" disabled>Copy PNG</button>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="input-heading">
+        <h2 id="input-heading">Link & options</h2>
+        <label for="url-input" class="label">URL or text</label>
+        <input
+          type="text"
+          id="url-input"
+          class="input"
+          placeholder="https://example.com or any text"
+          autocomplete="off"
+        >
+        <p id="url-error" class="error" role="alert" aria-live="polite" hidden></p>
+
+        <fieldset class="fieldset">
+          <legend class="label">QR style</legend>
+          <div class="style-options">
+            <label class="style-option">
+              <input type="radio" name="qr-style" value="dots" checked>
+              <span>DOTS</span>
+            </label>
+            <label class="style-option">
+              <input type="radio" name="qr-style" value="square">
+              <span>PIXELS</span>
+            </label>
+            <label class="style-option">
+              <input type="radio" name="qr-style" value="classy">
+              <span>HYBRID</span>
+            </label>
+          </div>
+        </fieldset>
+
+        <div class="color-row">
+          <div class="color-group">
+            <label for="qr-color" class="label">QR color</label>
+            <input type="color" id="qr-color" class="input-color" value="#000000" title="QR color">
+            <span id="qr-color-hex" class="color-hex">#000000</span>
+          </div>
+          <div class="color-group">
+            <label for="qr-bg-color" class="label">Background</label>
+            <input type="color" id="qr-bg-color" class="input-color" value="#ffffff" title="Background color">
+            <span id="qr-bg-color-hex" class="color-hex">#ffffff</span>
+          </div>
+        </div>
+
+        <label for="logo-input" class="label">Logo (optional)</label>
+        <input
+          type="file"
+          id="logo-input"
+          class="input-file"
+          accept="image/*"
+          aria-describedby="logo-hint"
+        >
+        <p id="logo-hint" class="hint">PNG or JPG. Shown in the center of the QR code.</p>
+
+        <label for="caption-input" class="label">Bottom text (optional)</label>
+        <input
+          type="text"
+          id="caption-input"
+          class="input"
+          placeholder="e.g. Scan me or qr id"
+          maxlength="40"
+          autocomplete="off"
+        >
+        <p class="hint">Shown at the bottom of the QR code frame.</p>
+
+        <button type="button" id="btn-generate" class="btn-primary">Generate QR code</button>
+      </section>
+    </div>
+
+    <footer class="footer">
+      <span class="credit">&gt;_ inder</span>
+    </footer>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.9.2/lib/qr-code-styling.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
