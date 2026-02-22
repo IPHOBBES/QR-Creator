@@ -61,7 +61,7 @@
       height: 280,
       type: 'svg',
       data: data,
-      margin: 2,
+      margin: 8,
       qrOptions: { errorCorrectionLevel: 'H' },
       dotsOptions: {
         color: colors.fg,
@@ -92,6 +92,28 @@
 
   function updateCaption(text) {
     qrCaptionEl.textContent = (text && text.trim()) ? text.trim() : '';
+  }
+
+  function clearPreview() {
+    if (!qrCode) return;
+    qrCode = null;
+    var qrInner = qrContainer.querySelector('.qr-inner');
+    if (qrInner) {
+      qrInner.innerHTML = '<p class="qr-placeholder">Enter a link and click Generate</p>';
+    } else {
+      qrContainer.innerHTML = '<div class="qr-inner"><p class="qr-placeholder">Enter a link and click Generate</p></div>';
+    }
+    var frame = qrContainer.closest('.qr-frame');
+    if (frame) {
+      frame.classList.remove('has-qr');
+      frame.style.removeProperty('--qr-frame-bg');
+      frame.style.removeProperty('--qr-frame-fg');
+    }
+    updateCaption('');
+    btnDownload.disabled = true;
+    btnDownloadJpeg.disabled = true;
+    btnDownloadSvg.disabled = true;
+    btnCopyPng.disabled = true;
   }
 
   function generate() {
@@ -146,6 +168,7 @@
   }
 
   var DOWNLOAD_QR_SIZE = 512;
+  var EXPORT_PADDING = 2;   /* margin around QR and caption in final image */
   var CAPTION_HEIGHT = 24;   /* minimal strip; QR stays square above it */
   var CAPTION_FONT_SIZE = 10; /* preview (CSS); export uses larger for sharpness */
   var CAPTION_FONT_SIZE_EXPORT = 16; /* larger so text is sharp in PNG/JPEG/copy */
@@ -173,16 +196,20 @@
       outCanvas.height = DOWNLOAD_QR_SIZE;
       var ctx = outCanvas.getContext('2d');
 
-      var qrSize = hasCaption ? DOWNLOAD_QR_SIZE - CAPTION_HEIGHT : DOWNLOAD_QR_SIZE;
+      var pad = EXPORT_PADDING;
+      var qrSize = hasCaption
+        ? DOWNLOAD_QR_SIZE - pad - CAPTION_HEIGHT - pad
+        : DOWNLOAD_QR_SIZE - pad * 2;
       var qrX = (DOWNLOAD_QR_SIZE - qrSize) / 2;
+      var qrY = pad;
 
       ctx.fillStyle = colors.bg;
       ctx.fillRect(0, 0, DOWNLOAD_QR_SIZE, DOWNLOAD_QR_SIZE);
       ctx.save();
       ctx.beginPath();
-      ctx.roundRect(qrX, 0, qrSize, qrSize, QR_CORNER_RADIUS);
+      ctx.roundRect(qrX, qrY, qrSize, qrSize, QR_CORNER_RADIUS);
       ctx.clip();
-      ctx.drawImage(img, qrX, 0, qrSize, qrSize);
+      ctx.drawImage(img, qrX, qrY, qrSize, qrSize);
       ctx.restore();
 
       if (hasCaption) {
@@ -190,7 +217,7 @@
         ctx.font = '400 ' + CAPTION_FONT_SIZE_EXPORT + 'px system-ui, -apple-system, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        var textY = qrSize + CAPTION_HEIGHT / 2;
+        var textY = qrY + qrSize + CAPTION_HEIGHT / 2;
         ctx.fillText(captionText, Math.round(DOWNLOAD_QR_SIZE / 2), Math.round(textY));
       }
 
@@ -218,8 +245,12 @@
       setTimeout(function () {
         var c = wrap.querySelector('canvas');
         if (c && c.width > 0) {
-          var qrSize = hasCaption ? DOWNLOAD_QR_SIZE - CAPTION_HEIGHT : DOWNLOAD_QR_SIZE;
+          var pad = EXPORT_PADDING;
+          var qrSize = hasCaption
+            ? DOWNLOAD_QR_SIZE - pad - CAPTION_HEIGHT - pad
+            : DOWNLOAD_QR_SIZE - pad * 2;
           var qrX = (DOWNLOAD_QR_SIZE - qrSize) / 2;
+          var qrY = pad;
           var out = document.createElement('canvas');
           out.width = DOWNLOAD_QR_SIZE;
           out.height = DOWNLOAD_QR_SIZE;
@@ -228,16 +259,16 @@
           ctx.fillRect(0, 0, out.width, out.height);
           ctx.save();
           ctx.beginPath();
-          ctx.roundRect(qrX, 0, qrSize, qrSize, QR_CORNER_RADIUS);
+          ctx.roundRect(qrX, qrY, qrSize, qrSize, QR_CORNER_RADIUS);
           ctx.clip();
-          ctx.drawImage(c, qrX, 0, qrSize, qrSize);
+          ctx.drawImage(c, qrX, qrY, qrSize, qrSize);
           ctx.restore();
           if (hasCaption) {
             ctx.fillStyle = colors.fg;
             ctx.font = '400 ' + CAPTION_FONT_SIZE_EXPORT + 'px system-ui, -apple-system, sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            var ty = qrSize + CAPTION_HEIGHT / 2;
+            var ty = qrY + qrSize + CAPTION_HEIGHT / 2;
             ctx.fillText(captionText, Math.round(DOWNLOAD_QR_SIZE / 2), Math.round(ty));
           }
           out.toBlob(function (b) {
@@ -272,8 +303,12 @@
     var img = new Image();
     img.onload = function () {
       URL.revokeObjectURL(svgUrl);
-      var qrSize = hasCaption ? DOWNLOAD_QR_SIZE - CAPTION_HEIGHT : DOWNLOAD_QR_SIZE;
+      var pad = EXPORT_PADDING;
+      var qrSize = hasCaption
+        ? DOWNLOAD_QR_SIZE - pad - CAPTION_HEIGHT - pad
+        : DOWNLOAD_QR_SIZE - pad * 2;
       var qrX = (DOWNLOAD_QR_SIZE - qrSize) / 2;
+      var qrY = pad;
       var out = document.createElement('canvas');
       out.width = DOWNLOAD_QR_SIZE;
       out.height = DOWNLOAD_QR_SIZE;
@@ -282,16 +317,16 @@
       ctx.fillRect(0, 0, DOWNLOAD_QR_SIZE, DOWNLOAD_QR_SIZE);
       ctx.save();
       ctx.beginPath();
-      ctx.roundRect(qrX, 0, qrSize, qrSize, QR_CORNER_RADIUS);
+      ctx.roundRect(qrX, qrY, qrSize, qrSize, QR_CORNER_RADIUS);
       ctx.clip();
-      ctx.drawImage(img, qrX, 0, qrSize, qrSize);
+      ctx.drawImage(img, qrX, qrY, qrSize, qrSize);
       ctx.restore();
       if (hasCaption) {
         ctx.fillStyle = colors.fg;
         ctx.font = '400 ' + CAPTION_FONT_SIZE_EXPORT + 'px system-ui, -apple-system, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        var textY = qrSize + CAPTION_HEIGHT / 2;
+        var textY = qrY + qrSize + CAPTION_HEIGHT / 2;
         ctx.fillText(captionText, Math.round(DOWNLOAD_QR_SIZE / 2), Math.round(textY));
       }
       callback(out);
@@ -390,12 +425,21 @@
     updateCaption(captionInput.value);
   }
 
+  function onUrlInput() {
+    if ((urlInput.value || '').trim() === '' && qrCode) {
+      clearError(urlError);
+      clearPreview();
+    }
+  }
+
   btnGenerate.addEventListener('click', generate);
   btnDownload.addEventListener('click', download);
   btnDownloadJpeg.addEventListener('click', downloadJpeg);
   btnDownloadSvg.addEventListener('click', downloadSvg);
   btnCopyPng.addEventListener('click', copyPng);
   if (logoChooseBtn) logoChooseBtn.addEventListener('click', function () { logoInput.click(); });
+  urlInput.addEventListener('input', onUrlInput);
+  urlInput.addEventListener('change', onUrlInput);
   logoInput.addEventListener('change', onLogoChange);
   captionInput.addEventListener('input', onCaptionInput);
   captionInput.addEventListener('change', onCaptionInput);
