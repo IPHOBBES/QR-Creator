@@ -416,15 +416,15 @@ body {
 .preview-actions {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
+  align-items: stretch;
+  gap: 1.125rem;
   width: 100%;
+  margin-top: 1.5rem;
 }
 
 .preview-actions .btn-primary {
   margin-top: 0;
   width: 100%;
-  max-width: 200px;
 }
 
 .preview-actions .btn-primary:disabled {
