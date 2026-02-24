@@ -13,23 +13,10 @@ Create styled QR codes with optional logo and bottom text. No backend—runs in 
 
 Preview matches the downloaded image (512×512 with centred QR and caption strip).
 
-## How to run
-
-Open `index.html` in a browser, or serve the folder with any static server:
-
-```bash
-# Example with Python
-python3 -m http.server 8000
-# Then open http://localhost:8000
-```
-
-No build step or dependencies.
-
 ## Tech
 
 - Vanilla HTML, CSS, and JavaScript
-- [qr-code-styling](https://github.com/kozakdenys/qr-code-styling) (loaded from jsDelivr) for QR generation and styling
+- [qr-code-styling](https://github.com/kozakdenys/qr-code-styling) 
+(loaded from jsDelivr) for QR generation and styling
 
-## License
 
-Use and modify as you like.
