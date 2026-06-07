@@ -62,10 +62,16 @@
       type: 'svg',
       data: data,
       margin: 8,
-      qrOptions: { errorCorrectionLevel: 'H' },
+      qrOptions: {
+        // Logos obscure modules, so reserve maximum recovery for logo-based codes.
+        errorCorrectionLevel: image ? 'H' : 'Q'
+      },
       dotsOptions: {
         color: colors.fg,
-        type: dotsType
+        type: dotsType,
+        // Prevent dense codes from shrinking to an integer module size and
+        // gaining a much larger quiet zone than simple codes.
+        roundSize: false
       },
       cornersSquareOptions: {
         color: colors.fg,
@@ -82,8 +88,9 @@
     if (image) {
       options.imageOptions = {
         hideBackgroundDots: true,
-        imageSize: 0.4,
-        margin: 6
+        // Keep the logo compact so phone cameras retain plenty of readable modules.
+        imageSize: 0.25,
+        margin: 5
       };
       options.image = image;
     }

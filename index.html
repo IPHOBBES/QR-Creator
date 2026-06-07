@@ -73,7 +73,7 @@
               aria-describedby="logo-hint"
             >
           </span>
-          <button type="button" id="logo-choose-btn" class="logo-choose-btn">Choose File</button>
+          <button type="button" id="logo-choose-btn" class="logo-choose-btn">File</button>
           <span id="logo-filename" class="logo-filename">No file chosen</span>
         </div>
         <p id="logo-hint" class="hint">PNG or JPG. Shown in the center of the QR code.</p>
@@ -103,16 +103,31 @@
           <div id="qr-caption" class="qr-caption"></div>
         </div>
         <div class="preview-actions">
-          <button type="button" id="btn-download" class="btn-primary" disabled>Download PNG</button>
-          <button type="button" id="btn-download-jpeg" class="btn-primary" disabled>Download JPEG</button>
-          <button type="button" id="btn-download-svg" class="btn-primary" disabled>Download SVG</button>
+          <button type="button" id="btn-download" class="btn-primary btn-icon" aria-label="Download PNG" title="Download PNG" disabled>
+            <svg class="download-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 3v12m0 0 4-4m-4 4-4-4M5 15v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"></path>
+            </svg>
+            <span>PNG</span>
+          </button>
+          <button type="button" id="btn-download-jpeg" class="btn-primary btn-icon" aria-label="Download JPEG" title="Download JPEG" disabled>
+            <svg class="download-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 3v12m0 0 4-4m-4 4-4-4M5 15v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"></path>
+            </svg>
+            <span>JPEG</span>
+          </button>
+          <button type="button" id="btn-download-svg" class="btn-primary btn-icon" aria-label="Download SVG" title="Download SVG" disabled>
+            <svg class="download-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 3v12m0 0 4-4m-4 4-4-4M5 15v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"></path>
+            </svg>
+            <span>SVG</span>
+          </button>
           <button type="button" id="btn-copy-png" class="btn-primary" disabled>Copy PNG</button>
         </div>
       </section>
     </div>
 
     <footer class="footer">
-      <span class="credit">&gt;_ inder</span>
+      <span class="credit">&gt;<span class="cursor-blink" aria-hidden="true">_</span> inder</span>
     </footer>
   </main>
   <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.9.2/lib/qr-code-styling.js"></script>
