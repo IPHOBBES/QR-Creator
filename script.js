@@ -23,6 +23,66 @@
   let qrCode = null;
   let logoDataUrl = null;
 
+  function slugify(text) {
+    var s = (text || '')
+      .trim()
+      .toLowerCase()
+      .replace(/^https?:\/\//, '')
+      .replace(/^www\./, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    return s.slice(0, 40) || 'qr-code';
+  }
+
+  function suggestFilename(ext) {
+    var caption = (captionInput.value || '').trim();
+    var url = (urlInput.value || '').trim();
+    var base = slugify(caption || url);
+    var now = new Date();
+    var dd = String(now.getDate()).padStart(2, '0');
+    var mm = String(now.getMonth() + 1).padStart(2, '0');
+    var yyyy = now.getFullYear();
+    var stamp = dd + '-' + mm + '-' + yyyy;
+    return base + '-QR-' + stamp + '.' + ext;
+  }
+
+  function saveBlob(blob, filename, mimeType) {
+    if (window.showSaveFilePicker) {
+      var types = [];
+      if (mimeType === 'image/png') {
+        types = [{ description: 'PNG image', accept: { 'image/png': ['.png'] } }];
+      } else if (mimeType === 'image/jpeg') {
+        types = [{ description: 'JPEG image', accept: { 'image/jpeg': ['.jpg', '.jpeg'] } }];
+      } else if (mimeType === 'image/svg+xml') {
+        types = [{ description: 'SVG image', accept: { 'image/svg+xml': ['.svg'] } }];
+      }
+      return window.showSaveFilePicker({
+        suggestedName: filename,
+        types: types
+      }).then(function (handle) {
+        return handle.createWritable().then(function (writable) {
+          return writable.write(blob).then(function () {
+            return writable.close();
+          });
+        });
+      }).catch(function (err) {
+        if (err && err.name === 'AbortError') return;
+        // Fallback if picker fails for any other reason
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(a.href);
+      });
+    }
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    return Promise.resolve();
+  }
+
   function showError(el, message) {
     el.textContent = message;
     el.hidden = false;
@@ -230,11 +290,7 @@
 
       outCanvas.toBlob(function (blob) {
         if (!blob) return;
-        var a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'qr-code.png';
-        a.click();
-        URL.revokeObjectURL(a.href);
+        saveBlob(blob, suggestFilename('png'), 'image/png');
       }, 'image/png');
     };
     img.onerror = function () {
@@ -280,11 +336,7 @@
           }
           out.toBlob(function (b) {
             if (b) {
-              var link = document.createElement('a');
-              link.href = URL.createObjectURL(b);
-              link.download = 'qr-code.png';
-              link.click();
-              URL.revokeObjectURL(link.href);
+              saveBlob(b, suggestFilename('png'), 'image/png');
             }
             document.body.removeChild(wrap);
           }, 'image/png');
@@ -346,11 +398,7 @@
     buildDownloadCanvas(function (out) {
       out.toBlob(function (blob) {
         if (!blob) return;
-        var a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'qr-code.jpg';
-        a.click();
-        URL.revokeObjectURL(a.href);
+        saveBlob(blob, suggestFilename('jpg'), 'image/jpeg');
       }, 'image/jpeg', 0.92);
     });
   }
@@ -379,11 +427,7 @@
     if (!svgEl) return;
     var svgString = new XMLSerializer().serializeToString(svgEl.cloneNode(true));
     var blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'qr-code.svg';
-    a.click();
-    URL.revokeObjectURL(a.href);
+    saveBlob(blob, suggestFilename('svg'), 'image/svg+xml');
   }
 
   function onLogoChange() {
