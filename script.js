@@ -4,6 +4,7 @@
   const urlInput = document.getElementById('url-input');
   const urlError = document.getElementById('url-error');
   const styleInputs = document.querySelectorAll('input[name="qr-style"]');
+  const cornerInputs = document.querySelectorAll('input[name="qr-corners"]');
   const qrColorInput = document.getElementById('qr-color');
   const qrBgColorInput = document.getElementById('qr-bg-color');
   const qrColorHex = document.getElementById('qr-color-hex');
@@ -98,6 +99,11 @@
     return checked ? checked.value : 'dots';
   }
 
+  function getSelectedCorners() {
+    const checked = document.querySelector('input[name="qr-corners"]:checked');
+    return checked ? checked.value : 'hybrid';
+  }
+
   function getDotsType(style) {
     const map = {
       dots: 'dots',      // circular dots
@@ -105,6 +111,15 @@
       classy: 'classy'   // horizontal lines + dots hybrid look
     };
     return map[style] || 'dots';
+  }
+
+  function getCornerTypes(cornerStyle) {
+    const map = {
+      round: { square: 'dot', dot: 'dot' },
+      square: { square: 'square', dot: 'square' },
+      hybrid: { square: 'extra-rounded', dot: 'dot' }
+    };
+    return map[cornerStyle] || map.hybrid;
   }
 
   function getQrColors() {
@@ -116,6 +131,7 @@
 
   function buildOptions(data, dotsType, image, colors) {
     colors = colors || getQrColors();
+    var corners = getCornerTypes(getSelectedCorners());
     const options = {
       width: 280,
       height: 280,
@@ -135,11 +151,11 @@
       },
       cornersSquareOptions: {
         color: colors.fg,
-        type: 'extra-rounded'
+        type: corners.square
       },
       cornersDotOptions: {
         color: colors.fg,
-        type: 'dot'
+        type: corners.dot
       },
       backgroundOptions: {
         color: colors.bg
@@ -447,6 +463,20 @@
   }
 
   function onStyleChange() {
+    // Keep corners matched to style by default; user can still change corners after.
+    var styleToCorners = {
+      dots: 'round',
+      square: 'square',
+      classy: 'hybrid'
+    };
+    var style = getSelectedStyle();
+    var cornerValue = styleToCorners[style] || 'round';
+    var cornerRadio = document.querySelector('input[name="qr-corners"][value="' + cornerValue + '"]');
+    if (cornerRadio) cornerRadio.checked = true;
+    if (qrCode && urlInput.value.trim()) generate();
+  }
+
+  function onCornersChange() {
     if (qrCode && urlInput.value.trim()) generate();
   }
 
@@ -500,5 +530,8 @@
   qrBgColorInput.addEventListener('change', onColorChange);
   styleInputs.forEach(function (radio) {
     radio.addEventListener('change', onStyleChange);
+  });
+  cornerInputs.forEach(function (radio) {
+    radio.addEventListener('change', onCornersChange);
   });
 })();

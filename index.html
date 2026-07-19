@@ -29,25 +29,44 @@
           autocomplete="off"
         >
         <p id="url-error" class="error" role="alert" aria-live="polite" hidden></p>
-        <p class="hint">Longer links make denser QR codes. For a simpler QR, shorten the link with your own tool first, then paste it here.</p>
+        <p class="hint hint-compact">Longer links make denser QR codes. For a simpler QR, shorten the link with your own tool first, then paste it here.</p>
 
-        <fieldset class="fieldset">
-          <legend class="label">QR style</legend>
-          <div class="style-options">
-            <label class="style-option">
-              <input type="radio" name="qr-style" value="dots" checked>
-              <span>DOTS</span>
-            </label>
-            <label class="style-option">
-              <input type="radio" name="qr-style" value="square">
-              <span>PIXELS</span>
-            </label>
-            <label class="style-option">
-              <input type="radio" name="qr-style" value="classy">
-              <span>HYBRID</span>
-            </label>
-          </div>
-        </fieldset>
+        <div class="style-row">
+          <fieldset class="fieldset">
+            <legend class="label">QR style</legend>
+            <div class="style-options">
+              <label class="style-option">
+                <input type="radio" name="qr-style" value="dots" checked>
+                <span>DOTS</span>
+              </label>
+              <label class="style-option">
+                <input type="radio" name="qr-style" value="square">
+                <span>PIXELS</span>
+              </label>
+              <label class="style-option">
+                <input type="radio" name="qr-style" value="classy">
+                <span>HYBRID</span>
+              </label>
+            </div>
+          </fieldset>
+          <fieldset class="fieldset">
+            <legend class="label">Corners</legend>
+            <div class="style-options">
+              <label class="style-option">
+                <input type="radio" name="qr-corners" value="round" checked>
+                <span>DOTS</span>
+              </label>
+              <label class="style-option">
+                <input type="radio" name="qr-corners" value="square">
+                <span>PIXELS</span>
+              </label>
+              <label class="style-option">
+                <input type="radio" name="qr-corners" value="hybrid">
+                <span>HYBRID</span>
+              </label>
+            </div>
+          </fieldset>
+        </div>
 
         <div class="color-row">
           <div class="color-group">
@@ -62,7 +81,7 @@
           </div>
         </div>
 
-        <span class="label">Logo (optional)</span>
+        <span class="label label-compact">Logo (optional)</span>
         <div class="logo-file-row">
           <span class="logo-input-wrap">
             <input
@@ -76,18 +95,18 @@
           <button type="button" id="logo-choose-btn" class="logo-choose-btn">File</button>
           <span id="logo-filename" class="logo-filename">No file chosen</span>
         </div>
-        <p id="logo-hint" class="hint">PNG or JPG. Shown in the center of the QR code.</p>
+        <p id="logo-hint" class="hint hint-compact">PNG or JPG. Shown in the center of the QR code.</p>
 
-        <label for="caption-input" class="label">Bottom text (optional)</label>
+        <label for="caption-input" class="label label-compact">Bottom text (optional)</label>
         <input
           type="text"
           id="caption-input"
-          class="input"
+          class="input input-compact"
           placeholder="e.g. Scan me or qr id"
           maxlength="40"
           autocomplete="off"
         >
-        <p class="hint">Shown at the bottom of the QR code frame.</p>
+        <p class="hint hint-compact">Shown at the bottom of the QR code frame.</p>
 
         <button type="button" id="btn-generate" class="btn-primary">Generate QR code</button>
       </section>
