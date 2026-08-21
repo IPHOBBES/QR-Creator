@@ -12,6 +12,19 @@
   const logoInput = document.getElementById('logo-input');
   const logoChooseBtn = document.getElementById('logo-choose-btn');
   const logoFilename = document.getElementById('logo-filename');
+  const logoEditBtn = document.getElementById('logo-edit-btn');
+  const logoThumbnailImage = document.getElementById('logo-thumbnail-image');
+  const logoShapeFieldset = document.querySelector('.logo-shape-row');
+  const logoShapeInputs = document.querySelectorAll('input[name="logo-shape"]');
+  const logoSizeFieldset = document.querySelector('.logo-size-row');
+  const logoSizeInputs = document.querySelectorAll('input[name="logo-size"]');
+  const logoEditor = document.getElementById('logo-editor');
+  const logoCropStage = document.getElementById('logo-crop-stage');
+  const logoCropImage = document.getElementById('logo-crop-image');
+  const logoZoomInput = document.getElementById('logo-zoom');
+  const logoEditorClose = document.getElementById('logo-editor-close');
+  const logoEditorCancel = document.getElementById('logo-editor-cancel');
+  const logoEditorApply = document.getElementById('logo-editor-apply');
   const captionInput = document.getElementById('caption-input');
   const btnGenerate = document.getElementById('btn-generate');
   const qrContainer = document.getElementById('qr-container');
@@ -23,6 +36,10 @@
 
   let qrCode = null;
   let logoDataUrl = null;
+  let logoSourceDataUrl = null;
+  let logoSourceImage = null;
+  let logoCrop = { x: 0, y: 0, zoom: 1 };
+  let logoCropDraft = { x: 0, y: 0, zoom: 1 };
 
   function slugify(text) {
     var s = (text || '')
@@ -165,7 +182,7 @@
       options.imageOptions = {
         hideBackgroundDots: true,
         // Keep the logo compact so phone cameras retain plenty of readable modules.
-        imageSize: 0.25,
+        imageSize: getLogoSize() / 100,
         margin: 5
       };
       options.image = image;
@@ -448,19 +465,149 @@
 
   function onLogoChange() {
     const file = logoInput.files && logoInput.files[0];
-    if (logoFilename) logoFilename.textContent = file ? file.name : 'No file chosen';
+    if (logoFilename) logoFilename.textContent = file ? file.name : 'No image selected';
     logoDataUrl = null;
+    logoSourceDataUrl = null;
+    logoSourceImage = null;
     if (!file || !file.type.startsWith('image/')) {
+      setLogoControlsEnabled(false);
       if (qrCode && urlInput.value.trim()) generate();
       return;
     }
     const reader = new FileReader();
     reader.onload = function (e) {
-      logoDataUrl = e.target.result;
-      if (qrCode && urlInput.value.trim()) generate();
+      logoSourceDataUrl = e.target.result;
+      var image = new Image();
+      image.onload = function () {
+        logoSourceImage = image;
+        logoCrop = { x: 0, y: 0, zoom: 1 };
+        setLogoControlsEnabled(true);
+        updateProcessedLogo();
+      };
+      image.src = logoSourceDataUrl;
     };
     reader.readAsDataURL(file);
   }
+
+  function getLogoShape() {
+    var checked = document.querySelector('input[name="logo-shape"]:checked');
+    return checked ? checked.value : 'original';
+  }
+
+  function getLogoSize() {
+    var checked = document.querySelector('input[name="logo-size"]:checked');
+    return checked ? Number(checked.value) : 20;
+  }
+
+  function setLogoControlsEnabled(enabled) {
+    logoShapeFieldset.disabled = !enabled;
+    logoSizeFieldset.disabled = !enabled;
+    logoEditBtn.hidden = !enabled;
+  }
+
+  function renderLogoCanvas(crop) {
+    if (!logoSourceImage) return null;
+    var size = 512;
+    var canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    var ctx = canvas.getContext('2d');
+    var shape = getLogoShape();
+    var cover = shape !== 'original';
+    var baseScale = cover
+      ? Math.max(size / logoSourceImage.naturalWidth, size / logoSourceImage.naturalHeight)
+      : Math.min(size / logoSourceImage.naturalWidth, size / logoSourceImage.naturalHeight);
+    var scale = baseScale * crop.zoom;
+    var width = logoSourceImage.naturalWidth * scale;
+    var height = logoSourceImage.naturalHeight * scale;
+    if (shape === 'circle') {
+      ctx.beginPath();
+      ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+      ctx.clip();
+    }
+    ctx.drawImage(logoSourceImage, (size - width) / 2 + crop.x * size / 240, (size - height) / 2 + crop.y * size / 240, width, height);
+    return canvas;
+  }
+
+  function updateProcessedLogo() {
+    var canvas = renderLogoCanvas(logoCrop);
+    if (!canvas) return;
+    logoDataUrl = canvas.toDataURL('image/png');
+    logoThumbnailImage.src = logoDataUrl;
+    logoCropStage.dataset.shape = getLogoShape();
+    if (qrCode && urlInput.value.trim()) generate();
+  }
+
+  function updateCropPreview() {
+    if (!logoSourceImage) return;
+    var stageSize = logoCropStage.clientWidth || 240;
+    var shape = getLogoShape();
+    var cover = shape !== 'original';
+    var baseScale = cover
+      ? Math.max(stageSize / logoSourceImage.naturalWidth, stageSize / logoSourceImage.naturalHeight)
+      : Math.min(stageSize / logoSourceImage.naturalWidth, stageSize / logoSourceImage.naturalHeight);
+    logoCropImage.style.width = (logoSourceImage.naturalWidth * baseScale) + 'px';
+    logoCropImage.style.height = (logoSourceImage.naturalHeight * baseScale) + 'px';
+    logoCropImage.style.transform = 'translate(-50%, -50%) translate(' + logoCropDraft.x + 'px, ' + logoCropDraft.y + 'px) scale(' + logoCropDraft.zoom + ')';
+    logoCropStage.dataset.shape = shape;
+  }
+
+  function openLogoEditor() {
+    if (!logoSourceImage) return;
+    logoCropDraft = { x: logoCrop.x, y: logoCrop.y, zoom: logoCrop.zoom };
+    logoCropImage.src = logoSourceDataUrl;
+    logoZoomInput.value = Math.round(logoCropDraft.zoom * 100);
+    logoEditor.showModal();
+    requestAnimationFrame(updateCropPreview);
+  }
+
+  function closeLogoEditor() {
+    if (logoEditor.open) logoEditor.close();
+  }
+
+  function applyLogoEdit() {
+    logoCrop = { x: logoCropDraft.x, y: logoCropDraft.y, zoom: logoCropDraft.zoom };
+    updateProcessedLogo();
+    closeLogoEditor();
+  }
+
+  var cropPointer = null;
+  logoCropStage.addEventListener('pointerdown', function (event) {
+    cropPointer = { id: event.pointerId, x: event.clientX, y: event.clientY, startX: logoCropDraft.x, startY: logoCropDraft.y };
+    logoCropStage.setPointerCapture(event.pointerId);
+  });
+  logoCropStage.addEventListener('pointermove', function (event) {
+    if (!cropPointer || cropPointer.id !== event.pointerId) return;
+    logoCropDraft.x = cropPointer.startX + event.clientX - cropPointer.x;
+    logoCropDraft.y = cropPointer.startY + event.clientY - cropPointer.y;
+    updateCropPreview();
+  });
+  logoCropStage.addEventListener('pointerup', function (event) {
+    if (cropPointer && cropPointer.id === event.pointerId) cropPointer = null;
+  });
+
+  logoZoomInput.addEventListener('input', function () {
+    logoCropDraft.zoom = Number(logoZoomInput.value) / 100;
+    updateCropPreview();
+  });
+
+  logoShapeInputs.forEach(function (radio) {
+    radio.addEventListener('change', function () {
+      logoCrop = { x: 0, y: 0, zoom: 1 };
+      updateProcessedLogo();
+      if (logoEditor.open) {
+        logoCropDraft = { x: 0, y: 0, zoom: 1 };
+        logoZoomInput.value = 100;
+        updateCropPreview();
+      }
+    });
+  });
+
+  logoSizeInputs.forEach(function (radio) {
+    radio.addEventListener('change', function () {
+      if (qrCode && urlInput.value.trim()) generate();
+    });
+  });
 
   function onStyleChange() {
     // Keep corners matched to style by default; user can still change corners after.
@@ -519,6 +666,13 @@
   btnDownloadSvg.addEventListener('click', downloadSvg);
   btnCopyPng.addEventListener('click', copyPng);
   if (logoChooseBtn) logoChooseBtn.addEventListener('click', function () { logoInput.click(); });
+  logoEditBtn.addEventListener('click', openLogoEditor);
+  logoEditorClose.addEventListener('click', closeLogoEditor);
+  logoEditorCancel.addEventListener('click', closeLogoEditor);
+  logoEditorApply.addEventListener('click', applyLogoEdit);
+  logoEditor.addEventListener('click', function (event) {
+    if (event.target === logoEditor) closeLogoEditor();
+  });
   urlInput.addEventListener('input', onUrlInput);
   urlInput.addEventListener('change', onUrlInput);
   logoInput.addEventListener('change', onLogoChange);

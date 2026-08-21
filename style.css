@@ -165,14 +165,30 @@ body {
   font-size: 0.875rem;
 }
 
-.logo-file-row {
-  position: relative;
+.logo-controls {
+  display: grid;
+  gap: 0.125rem;
+  margin-bottom: 0.5rem;
+}
+
+.logo-control-row {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: 0.75rem;
-  margin-bottom: 0.25rem;
+  min-height: 1.25rem;
+  gap: 0.4rem;
   width: 100%;
+}
+
+.logo-file-row {
+  position: relative;
+}
+
+.logo-row-label {
+  flex: 0 0 5.2rem;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  line-height: 1;
 }
 
 /* Hidden file input: out of flow so it doesn't affect button alignment */
@@ -198,9 +214,11 @@ body {
 }
 
 .logo-choose-btn {
-  flex-shrink: 0;
-  padding: 0.4rem 0.85rem;
-  font-size: 0.75rem;
+  flex: 0 0 3.35rem;
+  width: 3.35rem;
+  height: calc(1.2rem + 2px);
+  padding: 0;
+  font-size: 0.62rem;
   font-family: var(--font-sans);
   font-weight: 600;
   text-transform: uppercase;
@@ -217,8 +235,214 @@ body {
 }
 
 .logo-filename {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 0.7rem;
   color: var(--text-muted);
+}
+
+.logo-thumbnail {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: 0 0 1.25rem;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--accent);
+  border-radius: 5px;
+  background: var(--bg);
+  cursor: pointer;
+}
+
+.logo-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.logo-shape-row,
+.logo-size-row {
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+.logo-shape-row legend,
+.logo-size-row legend {
+  float: left;
+}
+
+.segmented-control {
+  display: flex;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.logo-option-control {
+  width: auto;
+}
+
+.logo-option-control label {
+  flex: 0 0 3.35rem;
+  width: 3.35rem;
+  text-align: center;
+}
+
+.segmented-control label {
+  cursor: pointer;
+}
+
+.segmented-control input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.segmented-control span {
+  display: block;
+  height: 1.2rem;
+  padding: 0 0.2rem;
+  border-right: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.65rem;
+  line-height: 1.2rem;
+}
+
+.segmented-control label:last-child span {
+  border-right: 0;
+}
+
+.segmented-control input:checked + span {
+  color: var(--accent-foreground);
+  background: var(--accent);
+}
+
+.logo-shape-row:disabled,
+.logo-size-row:disabled {
+  opacity: 0.42;
+}
+
+.editor-zoom-row input[type="range"] {
+  min-width: 0;
+  accent-color: var(--accent);
+}
+
+.logo-editor {
+  width: min(23rem, calc(100vw - 2rem));
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  background: var(--surface);
+  box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.55);
+}
+
+.logo-editor::backdrop {
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(2px);
+}
+
+.logo-editor-panel {
+  padding: 1.25rem;
+}
+
+.logo-editor-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.logo-editor-header h2 {
+  margin: 0 0 0.2rem;
+  font-size: 1rem;
+}
+
+.logo-editor-header p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.icon-button {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  color: var(--text-muted);
+  background: transparent;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.logo-crop-stage {
+  position: relative;
+  width: 15rem;
+  height: 15rem;
+  max-width: 100%;
+  margin: 0 auto 1rem;
+  overflow: hidden;
+  border: 1px solid var(--accent);
+  background-color: #fff;
+  background-image: linear-gradient(45deg, #ddd 25%, transparent 25%), linear-gradient(-45deg, #ddd 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ddd 75%), linear-gradient(-45deg, transparent 75%, #ddd 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+  cursor: grab;
+  touch-action: none;
+}
+
+.logo-crop-stage:active {
+  cursor: grabbing;
+}
+
+.logo-crop-stage[data-shape="circle"] {
+  border-radius: 50%;
+}
+
+.logo-crop-stage img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  max-width: none;
+  user-select: none;
+  pointer-events: none;
+  transform-origin: center;
+}
+
+.editor-zoom-row {
+  display: grid;
+  grid-template-columns: 3rem 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.logo-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.logo-editor-actions .btn-primary,
+.btn-secondary {
+  width: auto;
+  margin: 0;
+  padding: 0.55rem 0.9rem;
+}
+
+.btn-secondary {
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text);
+  background: transparent;
+  font: 600 0.75rem var(--font-sans);
+  cursor: pointer;
 }
 
 .fieldset {

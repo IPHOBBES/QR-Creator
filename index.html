@@ -81,21 +81,42 @@
           </div>
         </div>
 
-        <span class="label label-compact">Logo (optional)</span>
-        <div class="logo-file-row">
+        <div class="logo-controls" aria-labelledby="logo-label">
+          <div class="logo-control-row logo-file-row">
+            <span id="logo-label" class="logo-row-label">Centre image</span>
           <span class="logo-input-wrap">
             <input
               type="file"
               id="logo-input"
               accept="image/*"
-              aria-label="Logo (optional)"
-              aria-describedby="logo-hint"
+                aria-label="Choose a centre image"
             >
           </span>
-          <button type="button" id="logo-choose-btn" class="logo-choose-btn">File</button>
-          <span id="logo-filename" class="logo-filename">No file chosen</span>
+            <button type="button" id="logo-choose-btn" class="logo-choose-btn">Choose</button>
+            <button type="button" id="logo-edit-btn" class="logo-thumbnail" aria-label="Crop and reposition centre image" title="Crop and reposition" hidden>
+              <img id="logo-thumbnail-image" alt="">
+            </button>
+            <span id="logo-filename" class="logo-filename">No image selected</span>
+          </div>
+
+          <fieldset class="logo-control-row logo-shape-row" disabled>
+            <legend class="logo-row-label">Shape</legend>
+            <div class="segmented-control logo-option-control">
+              <label><input type="radio" name="logo-shape" value="original" checked><span>Original</span></label>
+              <label><input type="radio" name="logo-shape" value="square"><span>Square</span></label>
+              <label><input type="radio" name="logo-shape" value="circle"><span>Circle</span></label>
+            </div>
+          </fieldset>
+
+          <fieldset class="logo-control-row logo-size-row" disabled>
+            <legend class="logo-row-label">Size</legend>
+            <div class="segmented-control logo-option-control">
+              <label><input type="radio" name="logo-size" value="20" checked><span>Original</span></label>
+              <label><input type="radio" name="logo-size" value="16"><span>Small</span></label>
+              <label><input type="radio" name="logo-size" value="40"><span>Large</span></label>
+            </div>
+          </fieldset>
         </div>
-        <p id="logo-hint" class="hint hint-compact">PNG or JPG. Shown in the center of the QR code.</p>
 
         <label for="caption-input" class="label label-compact">Bottom text (optional)</label>
         <input
@@ -149,6 +170,29 @@
       <span class="credit">&gt;<span class="cursor-blink" aria-hidden="true">_</span> inder</span>
     </footer>
   </main>
+
+  <dialog id="logo-editor" class="logo-editor" aria-labelledby="logo-editor-title">
+    <form method="dialog" class="logo-editor-panel">
+      <div class="logo-editor-header">
+        <div>
+          <h2 id="logo-editor-title">Position image</h2>
+          <p>Drag the image to reposition it.</p>
+        </div>
+        <button type="button" id="logo-editor-close" class="icon-button" aria-label="Close image editor">×</button>
+      </div>
+      <div id="logo-crop-stage" class="logo-crop-stage" data-shape="original">
+        <img id="logo-crop-image" alt="Image crop preview" draggable="false">
+      </div>
+      <label class="editor-zoom-row" for="logo-zoom">
+        <span>Zoom</span>
+        <input type="range" id="logo-zoom" min="100" max="250" value="100" step="1">
+      </label>
+      <div class="logo-editor-actions">
+        <button type="button" id="logo-editor-cancel" class="btn-secondary">Cancel</button>
+        <button type="button" id="logo-editor-apply" class="btn-primary">Apply</button>
+      </div>
+    </form>
+  </dialog>
   <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.9.2/lib/qr-code-styling.js"></script>
   <script src="script.js"></script>
 </body>
