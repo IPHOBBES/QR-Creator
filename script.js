@@ -7,8 +7,17 @@
   const cornerInputs = document.querySelectorAll('input[name="qr-corners"]');
   const qrColorInput = document.getElementById('qr-color');
   const qrBgColorInput = document.getElementById('qr-bg-color');
-  const qrColorHex = document.getElementById('qr-color-hex');
-  const qrBgColorHex = document.getElementById('qr-bg-color-hex');
+  const textColorInput = document.getElementById('text-color');
+  const colorSwatches = document.querySelectorAll('.color-swatch');
+  const colorResetButtons = document.querySelectorAll('.color-reset');
+  const colorPicker = document.getElementById('color-picker');
+  const colorPickerTitle = document.getElementById('color-picker-title');
+  const colorPickerClose = document.getElementById('color-picker-close');
+  const colorEyedropper = document.getElementById('color-eyedropper');
+  const colorField = document.getElementById('color-field');
+  const colorFieldMarker = document.getElementById('color-field-marker');
+  const colorHueInput = document.getElementById('color-hue');
+  const colorPickerHex = document.getElementById('color-picker-hex');
   const logoInput = document.getElementById('logo-input');
   const logoChooseBtn = document.getElementById('logo-choose-btn');
   const logoFilename = document.getElementById('logo-filename');
@@ -40,6 +49,10 @@
   let logoSourceImage = null;
   let logoCrop = { x: 0, y: 0, zoom: 1 };
   let logoCropDraft = { x: 0, y: 0, zoom: 1 };
+  let activeColorInput = null;
+  let activeColorSwatch = null;
+  let activeColorGroup = null;
+  let pickerHsv = { h: 0, s: 0, v: 0 };
 
   function slugify(text) {
     var s = (text || '')
@@ -141,8 +154,9 @@
 
   function getQrColors() {
     return {
-      fg: qrColorInput.value || '#000000',
-      bg: qrBgColorInput.value || '#ffffff'
+      fg: normalizeHex(qrColorInput.value) || '#000000',
+      bg: normalizeHex(qrBgColorInput.value) || '#ffffff',
+      text: normalizeHex(textColorInput.value) || normalizeHex(qrColorInput.value) || '#000000'
     };
   }
 
@@ -257,7 +271,7 @@
     if (frame) {
       frame.classList.add('has-qr');
       frame.style.setProperty('--qr-frame-bg', colors.bg);
-      frame.style.setProperty('--qr-frame-fg', colors.fg);
+      frame.style.setProperty('--qr-frame-fg', colors.text);
     }
 
     updateCaption(captionInput.value);
@@ -313,7 +327,7 @@
       ctx.restore();
 
       if (hasCaption) {
-        ctx.fillStyle = colors.fg;
+        ctx.fillStyle = colors.text;
         ctx.font = '400 ' + CAPTION_FONT_SIZE_EXPORT + 'px system-ui, -apple-system, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -360,7 +374,7 @@
           ctx.drawImage(c, qrX, qrY, qrSize, qrSize);
           ctx.restore();
           if (hasCaption) {
-            ctx.fillStyle = colors.fg;
+            ctx.fillStyle = colors.text;
             ctx.font = '400 ' + CAPTION_FONT_SIZE_EXPORT + 'px system-ui, -apple-system, sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
@@ -414,7 +428,7 @@
       ctx.drawImage(img, qrX, qrY, qrSize, qrSize);
       ctx.restore();
       if (hasCaption) {
-        ctx.fillStyle = colors.fg;
+        ctx.fillStyle = colors.text;
         ctx.font = '400 ' + CAPTION_FONT_SIZE_EXPORT + 'px system-ui, -apple-system, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -630,9 +644,74 @@
   var colorDebounceTimer = null;
   var COLOR_DEBOUNCE_MS = 120;
 
-  function onColorInput() {
-    qrColorHex.textContent = qrColorInput.value;
-    qrBgColorHex.textContent = qrBgColorInput.value;
+  function normalizeHex(value) {
+    var hex = String(value || '').trim();
+    if (hex.charAt(0) !== '#') hex = '#' + hex;
+    if (/^#[0-9a-f]{3}$/i.test(hex)) {
+      hex = '#' + hex.charAt(1) + hex.charAt(1) + hex.charAt(2) + hex.charAt(2) + hex.charAt(3) + hex.charAt(3);
+    }
+    return /^#[0-9a-f]{6}$/i.test(hex) ? hex.toUpperCase() : null;
+  }
+
+  function normalizeTypedHex(value) {
+    var hex = String(value || '').trim();
+    if (hex.charAt(0) !== '#') hex = '#' + hex;
+    return /^#[0-9a-f]{6}$/i.test(hex) ? hex.toUpperCase() : null;
+  }
+
+  function hexToRgb(hex) {
+    var value = parseInt(hex.slice(1), 16);
+    return { r: (value >> 16) & 255, g: (value >> 8) & 255, b: value & 255 };
+  }
+
+  function rgbToHex(r, g, b) {
+    return '#' + [r, g, b].map(function (value) {
+      return Math.round(value).toString(16).padStart(2, '0');
+    }).join('').toUpperCase();
+  }
+
+  function rgbToHsv(rgb) {
+    var r = rgb.r / 255;
+    var g = rgb.g / 255;
+    var b = rgb.b / 255;
+    var max = Math.max(r, g, b);
+    var min = Math.min(r, g, b);
+    var delta = max - min;
+    var h = 0;
+    if (delta) {
+      if (max === r) h = 60 * (((g - b) / delta) % 6);
+      else if (max === g) h = 60 * ((b - r) / delta + 2);
+      else h = 60 * ((r - g) / delta + 4);
+    }
+    if (h < 0) h += 360;
+    return { h: h, s: max ? delta / max : 0, v: max };
+  }
+
+  function hsvToHex(hsv) {
+    var c = hsv.v * hsv.s;
+    var x = c * (1 - Math.abs(((hsv.h / 60) % 2) - 1));
+    var m = hsv.v - c;
+    var rgb;
+    if (hsv.h < 60) rgb = [c, x, 0];
+    else if (hsv.h < 120) rgb = [x, c, 0];
+    else if (hsv.h < 180) rgb = [0, c, x];
+    else if (hsv.h < 240) rgb = [0, x, c];
+    else if (hsv.h < 300) rgb = [x, 0, c];
+    else rgb = [c, 0, x];
+    return rgbToHex((rgb[0] + m) * 255, (rgb[1] + m) * 255, (rgb[2] + m) * 255);
+  }
+
+  function hueColor(hue) {
+    return hsvToHex({ h: hue, s: 1, v: 1 });
+  }
+
+  function updateSwatch(input) {
+    var swatch = document.querySelector('[data-color-target="' + input.id + '"]');
+    var color = normalizeHex(input.value);
+    if (swatch && color) swatch.style.setProperty('--swatch-color', color);
+  }
+
+  function scheduleColorRender() {
     if (!qrCode || !urlInput.value.trim()) return;
     if (colorDebounceTimer) clearTimeout(colorDebounceTimer);
     colorDebounceTimer = setTimeout(function () {
@@ -641,13 +720,181 @@
     }, COLOR_DEBOUNCE_MS);
   }
 
-  function onColorChange() {
-    qrColorHex.textContent = qrColorInput.value;
-    qrBgColorHex.textContent = qrBgColorInput.value;
+  function renderColorImmediately() {
     if (colorDebounceTimer) clearTimeout(colorDebounceTimer);
     colorDebounceTimer = null;
     if (qrCode && urlInput.value.trim()) generate();
   }
+
+  function applyColor(input, color, finalChange) {
+    var normalized = normalizeHex(color);
+    if (!normalized) return false;
+    input.value = normalized;
+    input.dataset.lastColor = normalized;
+    updateSwatch(input);
+    if (finalChange) renderColorImmediately();
+    else scheduleColorRender();
+    return true;
+  }
+
+  function updatePickerVisuals(color) {
+    pickerHsv = rgbToHsv(hexToRgb(color));
+    colorHueInput.value = Math.round(pickerHsv.h);
+    colorHueInput.style.setProperty('--hue-thumb', hueColor(pickerHsv.h));
+    colorField.style.backgroundColor = hueColor(pickerHsv.h);
+    colorFieldMarker.style.left = (pickerHsv.s * 100) + '%';
+    colorFieldMarker.style.top = ((1 - pickerHsv.v) * 100) + '%';
+    colorPickerHex.value = color;
+  }
+
+  function positionColorPicker(swatch) {
+    var swatchRect = swatch.getBoundingClientRect();
+    var gridRect = document.querySelector('.two-col').getBoundingClientRect();
+    var pickerWidth = colorPicker.offsetWidth || 216;
+    var pickerHeight = colorPicker.offsetHeight || 230;
+    var left = gridRect.left - pickerWidth - 10;
+    if (left < 8) left = 8;
+    var top = Math.min(swatchRect.top, window.innerHeight - pickerHeight - 8);
+    colorPicker.style.left = left + 'px';
+    colorPicker.style.top = Math.max(8, top) + 'px';
+  }
+
+  function openColorPicker(swatch) {
+    activeColorSwatch = swatch;
+    activeColorInput = document.getElementById(swatch.dataset.colorTarget);
+    setActiveColorGroup(activeColorInput);
+    var color = normalizeHex(activeColorInput.value) || activeColorInput.dataset.lastColor;
+    var pickerTitles = {
+      'qr-color': 'QR Colour',
+      'qr-bg-color': 'Background Colour',
+      'text-color': 'Text Colour'
+    };
+    colorPickerTitle.textContent = pickerTitles[swatch.dataset.colorTarget] || 'Colour';
+    colorPicker.hidden = false;
+    updatePickerVisuals(color);
+    positionColorPicker(swatch);
+  }
+
+  function closeColorPicker() {
+    colorPicker.hidden = true;
+    activeColorInput = null;
+    activeColorSwatch = null;
+    clearActiveColorGroup();
+  }
+
+  function setActiveColorGroup(input) {
+    clearActiveColorGroup();
+    activeColorGroup = input.closest('.color-group');
+    if (activeColorGroup) activeColorGroup.classList.add('is-active');
+  }
+
+  function clearActiveColorGroup() {
+    if (activeColorGroup) activeColorGroup.classList.remove('is-active');
+    activeColorGroup = null;
+  }
+
+  function pickFromColorField(event) {
+    if (!activeColorInput) return;
+    var rect = colorField.getBoundingClientRect();
+    pickerHsv.s = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+    pickerHsv.v = 1 - Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
+    var color = hsvToHex(pickerHsv);
+    colorFieldMarker.style.left = (pickerHsv.s * 100) + '%';
+    colorFieldMarker.style.top = ((1 - pickerHsv.v) * 100) + '%';
+    colorPickerHex.value = color;
+    applyColor(activeColorInput, color, false);
+  }
+
+  [qrColorInput, qrBgColorInput, textColorInput].forEach(function (input) {
+    input.dataset.lastColor = normalizeHex(input.value);
+    updateSwatch(input);
+    input.addEventListener('input', function () {
+      var color = normalizeTypedHex(input.value);
+      if (color) applyColor(input, color, false);
+    });
+    input.addEventListener('change', function () {
+      if (!input.value.trim()) return;
+      if (!applyColor(input, input.value, true)) input.value = input.dataset.lastColor;
+    });
+    input.addEventListener('blur', function () {
+      if (input.value.trim() && !normalizeHex(input.value)) input.value = input.dataset.lastColor;
+      if (colorPicker.hidden) clearActiveColorGroup();
+    });
+    input.addEventListener('focus', function () { setActiveColorGroup(input); });
+  });
+
+  colorSwatches.forEach(function (swatch) {
+    swatch.addEventListener('click', function () { openColorPicker(swatch); });
+  });
+
+  colorResetButtons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      var input = document.getElementById(button.dataset.resetTarget);
+      if (input === textColorInput) {
+        input.value = normalizeHex(qrColorInput.value) || '#000000';
+        input.dataset.lastColor = input.value;
+        updateSwatch(input);
+        renderColorImmediately();
+      } else {
+        applyColor(input, input === qrBgColorInput ? '#FFFFFF' : '#000000', true);
+      }
+      if (!colorPicker.hidden && activeColorInput === input) updatePickerVisuals(input.value);
+    });
+  });
+
+  var colorFieldDragging = false;
+  colorField.addEventListener('pointerdown', function (event) {
+    colorFieldDragging = true;
+    colorField.setPointerCapture(event.pointerId);
+    pickFromColorField(event);
+  });
+  colorField.addEventListener('pointermove', function (event) {
+    if (colorFieldDragging) pickFromColorField(event);
+  });
+  colorField.addEventListener('pointerup', function () {
+    colorFieldDragging = false;
+    renderColorImmediately();
+  });
+  colorHueInput.addEventListener('input', function () {
+    pickerHsv.h = Number(colorHueInput.value);
+    colorHueInput.style.setProperty('--hue-thumb', hueColor(pickerHsv.h));
+    colorField.style.backgroundColor = hueColor(pickerHsv.h);
+    var color = hsvToHex(pickerHsv);
+    colorPickerHex.value = color;
+    if (activeColorInput) applyColor(activeColorInput, color, false);
+  });
+  colorHueInput.addEventListener('change', renderColorImmediately);
+  colorPickerHex.addEventListener('input', function () {
+    var color = normalizeTypedHex(colorPickerHex.value);
+    if (color && activeColorInput) {
+      applyColor(activeColorInput, color, false);
+      updatePickerVisuals(color);
+    }
+  });
+  colorPickerHex.addEventListener('change', renderColorImmediately);
+  colorPickerClose.addEventListener('click', closeColorPicker);
+  if ('EyeDropper' in window) {
+    colorEyedropper.hidden = false;
+    colorEyedropper.addEventListener('click', function () {
+      if (!activeColorInput) return;
+      var targetInput = activeColorInput;
+      var eyeDropper = new window.EyeDropper();
+      eyeDropper.open().then(function (result) {
+        var color = normalizeHex(result.sRGBHex);
+        if (!color) return;
+        applyColor(targetInput, color, true);
+        if (activeColorInput === targetInput) updatePickerVisuals(color);
+      }).catch(function () {
+        // The user cancelled the eyedropper.
+      });
+    });
+  }
+  document.addEventListener('pointerdown', function (event) {
+    if (!colorPicker.hidden && !colorPicker.contains(event.target) && !event.target.closest('.color-swatch')) closeColorPicker();
+  });
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && !colorPicker.hidden) closeColorPicker();
+  });
 
   function onCaptionInput() {
     updateCaption(captionInput.value);
@@ -678,10 +925,6 @@
   logoInput.addEventListener('change', onLogoChange);
   captionInput.addEventListener('input', onCaptionInput);
   captionInput.addEventListener('change', onCaptionInput);
-  qrColorInput.addEventListener('input', onColorInput);
-  qrColorInput.addEventListener('change', onColorChange);
-  qrBgColorInput.addEventListener('input', onColorInput);
-  qrBgColorInput.addEventListener('change', onColorChange);
   styleInputs.forEach(function (radio) {
     radio.addEventListener('change', onStyleChange);
   });
