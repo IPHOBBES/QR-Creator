@@ -24,8 +24,7 @@ Preview matches the downloaded image (512×512 with centred QR and caption strip
 - **Favicon** — `favicon.svg` is linked from the document head as an SVG favicon.
 - **Footer signature** — The footer intentionally displays `>_ inder`, including the
   space before `inder`, matching the signature used on
-  [iphobbes.github.io](https://iphobbes.github.io/).
+  [inderstudio.github.io](https://inderstudio.github.io/).
 - **Blinking cursor** — Only the underscore is animated. The `.cursor-blink` span
   uses the `cursor-blink` CSS keyframes with a one-second stepped loop, alternating
   its opacity to create a terminal-style blinking cursor.
-
