@@ -52,6 +52,25 @@ body {
   padding: 2rem 1.25rem;
 }
 
+.web-apps-link {
+  display: inline-block;
+  margin-bottom: 1.5rem;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.web-apps-link:hover,
+.web-apps-link:focus-visible,
+.credit:hover,
+.credit:focus-visible {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
 .two-col {
   display: grid;
   gap: 1.25rem;
@@ -940,6 +959,7 @@ body {
   font-family: var(--font-mono);
   font-size: 0.875rem;
   color: var(--text-muted);
+  text-decoration: none;
 }
 
 .credit .cursor-blink {
